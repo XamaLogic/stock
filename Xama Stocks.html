@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Xama Stocks</title>
+<style>
+:root{--bg:#f2f3f5;--card:#fff;--tx:#14171a;--mut:#6b7280;--bd:#e1e4e8;--up:#0a9d5c;--dn:#d6334a;--ac:#2f6df6;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1013;--card:#171a1f;--tx:#e8eaed;--mut:#8b929c;--bd:#262a31;--up:#2ebd85;--dn:#f6465d;--ac:#4f86ff;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1013;--card:#171a1f;--tx:#e8eaed;--mut:#8b929c;--bd:#262a31;--up:#2ebd85;--dn:#f6465d;--ac:#4f86ff;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Arial,Helvetica,sans-serif;font-size:14px}
+.up{color:var(--up)}.dn{color:var(--dn)}.mut{color:var(--mut)}
+header{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--card);border-bottom:1px solid var(--bd);flex-wrap:wrap}
+.logo{font-weight:bold;font-size:20px;margin-right:auto}.logo span{color:var(--ac)}
+input,button{font:inherit;color:var(--tx)}
+input{background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:7px 9px;min-width:0}
+button{background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--ac)}
+button.pri{background:var(--ac);border-color:var(--ac);color:#fff}
+.hero{padding:16px;max-width:1300px;margin:0 auto}
+.hero .nw{font-size:34px;font-weight:bold}
+.wrap{display:grid;grid-template-columns:200px 1fr 320px;gap:12px;padding:0 16px 24px;max-width:1300px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:12px;margin-bottom:12px}
+h3{margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}
+.coin{display:flex;justify-content:space-between;padding:9px 8px;border-radius:6px;cursor:pointer}
+.coin:hover{background:var(--bg)}.coin.on{background:var(--bg);outline:1px solid var(--ac)}
+.coin b{display:block}.coin small{color:var(--mut)}.coin div:last-child{text-align:right}
+canvas{width:100%;height:320px;display:block}
+.ch{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;flex-wrap:wrap;gap:6px}
+.ch .pr{font-size:24px;font-weight:bold}
+.tabs{display:flex;gap:6px;margin-bottom:10px}.tabs button{flex:1}
+.tabs button.on.b{background:var(--up);border-color:var(--up);color:#fff}.tabs button.on.s{background:var(--dn);border-color:var(--dn);color:#fff}
+.row{display:flex;gap:6px;margin-bottom:8px}.row input{flex:1}
+.row button{padding:7px 10px}
+#go{width:100%;padding:10px;font-weight:bold;color:#fff;border:0}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.kv div{display:flex;flex-direction:column}.kv span{color:var(--mut);font-size:12px}.kv b{font-size:15px}
+table{width:100%;border-collapse:collapse}td,th{padding:6px 4px;text-align:left;border-bottom:1px solid var(--bd);font-size:13px}
+th{color:var(--mut);font-weight:normal;font-size:12px}td:last-child,th:last-child{text-align:right}
+tr.hr{cursor:pointer}
+.news div{padding:6px 0;border-bottom:1px solid var(--bd);font-size:13px}.news div:last-child{border:0}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#14171a;color:#fff;padding:10px 16px;border-radius:8px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9;max-width:90%;text-align:center}
+#bust{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:10;padding:20px}
+#bust div{background:var(--card);padding:24px;border-radius:10px;max-width:340px;text-align:center}
+#msgs{height:220px;overflow-y:auto;font-size:13px}#msgs .m{padding:5px 0;border-bottom:1px solid var(--bd);word-break:break-word}#msgs .me{color:var(--ac)}
+@media(max-width:960px){.wrap{grid-template-columns:1fr}.coins{display:flex;overflow-x:auto;gap:6px}.coin{min-width:130px;border:1px solid var(--bd)}canvas{height:260px}}
+</style></head><body>
+<header>
+<div class="logo">Xama <span>Stocks</span></div>
+<input id="nm" placeholder="Your name" maxlength="16" style="width:130px">
+<button class="pri" id="sub">Submit score</button>
+<button id="rs">Reset</button>
+</header>
+<div class="hero"><div class="mut">Your money</div><div class="nw" id="nw"></div><div id="sum" style="margin-top:4px;font-size:15px"></div></div>
+<div class="wrap">
+<div><div class="card"><h3>Coins</h3><div class="coins" id="coins"></div></div></div>
+<div>
+<div class="card"><div class="ch"><div><b id="cn"></b> <span class="mut" id="cs"></span></div><div><span class="pr" id="cp"></span> <span id="cc"></span></div></div><canvas id="cv"></canvas></div>
+<div class="card"><div class="tabs"><button class="on b" id="tb">Buy</button><button class="s" id="ts">Sell</button></div>
+<div class="row"><input id="amt" type="number" min="0" step="0.01" placeholder="How much ($)"><button data-p=".25">25%</button><button data-p=".5">50%</button><button data-p="1">Max</button></div>
+<div class="mut" id="tinfo" style="margin-bottom:10px;font-size:13px"></div>
+<button id="go"></button></div>
+<div class="card"><h3>Your coins</h3><div id="hold"></div></div>
+</div>
+<div>
+<div class="card"><h3>Your stats</h3><div class="kv" id="stats"></div></div>
+<div class="card"><h3>Leaderboard <span id="lbn" style="text-transform:none;letter-spacing:0"></span></h3><div id="lb"></div></div>
+<div class="card"><h3>Global chat <span id="cmode" style="text-transform:none;letter-spacing:0"></span></h3><div id="msgs"></div><div class="row" style="margin:8px 0 0"><input id="cin" maxlength="200" placeholder="Say something…"><button class="pri" id="csend">Send</button></div></div>
+<div class="card news"><h3>Market news</h3><div id="news"></div></div>
+</div></div>
+<div id="toast"></div>
+<div id="bust"><div><h2 style="margin-top:0">You lost it all</h2><p class="mut">You have no money left. Try again!</p><button class="pri" id="again">Try again with $67</button></div></div>
+<script>
+const START=67,FEE=.0025,$=id=>document.getElementById(id);
+const BASE=[["BTC","Bitcoin",67000,.0008],["ETH","Ethereum",3400,.0011],["SOL","Solana",160,.0017],["XRP","XRP",.55,.0014],["DOGE","Dogecoin",.16,.0021],["PEPE","Pepe",.0000125,.0034]];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fp=p=>p>=1000?p.toLocaleString(undefined,{maximumFractionDigits:2}):p>=1?p.toFixed(2):p>=.01?p.toFixed(4):p.toFixed(8);
+const fm=x=>(x<0?"-":"")+"$"+Math.abs(x).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const pc=x=>(x>=0?"+":"-")+Math.abs(x).toFixed(2)+"%";
+const cl=x=>x>=0?"up":"dn";
+const gauss=()=>Math.sqrt(-2*Math.log(1-Math.random()))*Math.cos(2*Math.PI*Math.random());
+function fresh(nm){return{cash:START,hold:{},tr:0,sells:0,wins:0,best:0,worst:0,peak:START,dd:0,fees:0,name:nm||""}}
+let S=null;try{S=JSON.parse(localStorage.getItem("xama1"))}catch(e){}
+if(!S||!S.hold)S=fresh();
+const C=BASE.map(([s,name,p,v])=>({s,name,v,p:(S.px&&S.px[s])||p,shock:0,mom:0,cs:[],cur:null,hist:[]}));
+let M=0,sel="BTC",mode="buy",news=[],LB=[],db=null,uid=null;
+const cur=()=>C.find(c=>c.s===sel);
+function save(){try{S.px={};C.forEach(c=>S.px[c.s]=c.p);localStorage.setItem("xama1",JSON.stringify(S))}catch(e){}}
+function step(c){
+ let r=c.v*(gauss()+.6*M)+c.shock*.3+c.mom*.1;c.shock*=.7;
+ if(Math.random()<.0007)r+=(Math.random()<.5?-1:1)*c.v*8;
+ r=Math.max(-.2,Math.min(.2,r));c.mom=r;c.p=Math.max(c.p*(1+r),1e-9);
+ if(!c.cur)c.cur={o:c.p,h:c.p,l:c.p,c:c.p,k:0};
+ const u=c.cur;u.h=Math.max(u.h,c.p);u.l=Math.min(u.l,c.p);u.c=c.p;
+ if(++u.k>=3){c.cs.push(u);if(c.cs.length>90)c.cs.shift();c.cur={o:c.p,h:c.p,l:c.p,c:c.p,k:0}}
+ c.hist.push(c.p);if(c.hist.length>60)c.hist.shift();
+}
+const UP=["A whale just bought a lot of %","% got listed on a big exchange","% is trending on social media","Big investors are buying %"];
+const DN=["The team is selling their %","Hack rumors about %","Officials are looking at %","Traders are losing money on %"];
+function tick(){
+ M=M*.9+gauss()*.5;
+ if(Math.random()<.02){const c=C[Math.floor(Math.random()*C.length)],up=Math.random()<.5,L=up?UP:DN;
+  c.shock=(up?1:-1)*(.03+Math.random()*.07);
+  news.unshift({t:new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit"}),m:L[Math.floor(Math.random()*4)].replace("%",c.name),up});news=news.slice(0,7)}
+ C.forEach(step);
+ const v=nw();S.peak=Math.max(S.peak,v);S.dd=Math.max(S.dd,(S.peak-v)/S.peak);
+ if(++ticks%5===0)save();
+ render();
+}
+let ticks=0;
+for(let i=0;i<270;i++){M=M*.9+gauss()*.5;C.forEach(step)}
+function nw(){return S.cash+Object.keys(S.hold).reduce((a,k)=>a+S.hold[k].q*C.find(c=>c.s===k).p,0)}
+function render(){
+ const v=nw(),pnl=v-START,pct=pnl/START*100;
+ $("nw").textContent=fm(v);
+ $("sum").innerHTML=Math.abs(pnl)<.005?'<span class="mut">No change. You started with $67.</span>':'<span class="'+cl(pnl)+'">You’re '+(pnl>=0?"up ":"down ")+Math.abs(pct).toFixed(2)+"% ("+(pnl>=0?"made ":"lost ")+fm(Math.abs(pnl))+')</span> <span class="mut">from your $67</span>';
+ $("coins").innerHTML=C.map(c=>{const ch=(c.p/c.hist[0]-1)*100;return'<div class="coin'+(c.s===sel?" on":"")+'" data-s="'+c.s+'"><div><b>'+c.s+'</b><small>'+c.name+'</small></div><div><b>$'+fp(c.p)+'</b><small class="'+cl(ch)+'">'+pc(ch)+'</small></div></div>'}).join("");
+ const c=cur(),ch=(c.p/c.hist[0]-1)*100,h=S.hold[c.s];
+ $("cn").textContent=c.name;$("cs").textContent=c.s+"/USD";$("cp").textContent="$"+fp(c.p);$("cc").textContent=pc(ch)+" (1m)";$("cc").className=cl(ch);
+ $("tinfo").textContent=mode==="buy"?"Cash: "+fm(S.cash)+" · Fee: 0.25%":"You own "+(h?h.q.toPrecision(5):"0")+" "+c.s+" (worth "+fm(h?h.q*c.p:0)+") · Fee: 0.25%";
+ $("go").textContent=(mode==="buy"?"Buy ":"Sell ")+c.s;$("go").style.background=mode==="buy"?"var(--up)":"var(--dn)";
+ const ks=Object.keys(S.hold);
+ $("hold").innerHTML=ks.length?'<table><tr><th>Coin</th><th>Value</th><th>Bought at</th><th>Profit</th></tr>'+ks.map(k=>{const q=S.hold[k],cc=C.find(x=>x.s===k),val=q.q*cc.p,p=(val/q.cost-1)*100;return'<tr class="hr" data-s="'+k+'"><td><b>'+k+'</b></td><td>'+fm(val)+'</td><td>$'+fp(q.cost/q.q)+'</td><td class="'+cl(p)+'">'+pc(p)+'</td></tr>'}).join("")+"</table>":'<span class="mut">You don’t own any coins yet.</span>';
+ const inv=v-S.cash,w=S.sells?(S.wins/S.sells*100).toFixed(0)+"%":"–";
+ const kv=[["Cash",fm(S.cash)],["In coins",fm(inv)],["Profit/Loss",'<b class="'+cl(pnl)+'">'+(pnl>=0?"+":"")+fm(pnl)+"</b>"],["Change",'<b class="'+cl(pnl)+'">'+pc(pct)+"</b>"],["Highest money",fm(S.peak)],["Biggest drop","-"+(S.dd*100).toFixed(1)+"%"],["Trades",S.tr],["Wins",w],["Best trade",fm(S.best)],["Worst trade",fm(S.worst)],["Fees paid",fm(S.fees)],["Tip","Don’t panic sell"]];
+ $("stats").innerHTML=kv.map(([a,b])=>"<div><span>"+a+"</span>"+(String(b).startsWith("<b")?b:"<b>"+b+"</b>")+"</div>").join("");
+ $("news").innerHTML=news.length?news.map(n=>'<div><span class="mut">'+n.t+'</span> <span class="'+(n.up?"up":"dn")+'">'+(n.up?"▲":"▼")+"</span> "+esc(n.m)+"</div>").join(""):'<span class="mut">No news yet</span>';
+ draw();
+ if(v<1&&!Object.keys(S.hold).length||v<.25)$("bust").style.display="flex";
+}
+function draw(){
+ const c=cur(),cv=$("cv"),r=devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;if(!w)return;
+ if(cv.width!==Math.round(w*r)){cv.width=Math.round(w*r);cv.height=Math.round(h*r)}
+ const x=cv.getContext("2d"),st=getComputedStyle(document.documentElement),up=st.getPropertyValue("--up"),dn=st.getPropertyValue("--dn"),bd=st.getPropertyValue("--bd"),mu=st.getPropertyValue("--mut"),tx=st.getPropertyValue("--tx");
+ x.setTransform(r,0,0,r,0,0);x.clearRect(0,0,w,h);
+ const cs=c.cs.slice(-60).concat(c.cur?[c.cur]:[]);let hi=-1e99,lo=1e99;cs.forEach(k=>{hi=Math.max(hi,k.h);lo=Math.min(lo,k.l)});
+ const pad=(hi-lo)*.12||hi*.01;hi+=pad;lo-=pad;
+ const pw=70,cw=(w-pw)/60,Y=v=>8+(hi-v)/(hi-lo)*(h-16);
+ x.font="11px Arial";x.textAlign="left";x.lineWidth=1;
+ for(let i=0;i<5;i++){const v=lo+(hi-lo)*i/4,y=Y(v);x.strokeStyle=bd;x.beginPath();x.moveTo(0,y);x.lineTo(w-pw,y);x.stroke();x.fillStyle=mu;x.fillText(fp(v),w-pw+6,y+4)}
+ const off=60-cs.length;
+ cs.forEach((k,i)=>{const xx=(i+off)*cw+cw/2,col=k.c>=k.o?up:dn;x.strokeStyle=col;x.fillStyle=col;x.beginPath();x.moveTo(xx,Y(k.h));x.lineTo(xx,Y(k.l));x.stroke();const t=Y(Math.max(k.o,k.c)),b=Y(Math.min(k.o,k.c));x.fillRect(xx-cw*.3,t,cw*.6,Math.max(1,b-t))});
+ const y=Y(c.p);x.setLineDash([4,4]);x.strokeStyle=mu;x.beginPath();x.moveTo(0,y);x.lineTo(w-pw,y);x.stroke();x.setLineDash([]);
+ const hd=S.hold[c.s];if(hd){const ay=Y(hd.cost/hd.q);if(ay>0&&ay<h){x.setLineDash([2,3]);x.strokeStyle=tx;x.beginPath();x.moveTo(0,ay);x.lineTo(w-pw,ay);x.stroke();x.setLineDash([]);x.fillStyle=tx;x.fillText("you bought",4,ay-4)}}
+ x.fillStyle=cs[cs.length-1].c>=cs[cs.length-1].o?up:dn;x.fillRect(w-pw,y-8,pw,16);x.fillStyle="#fff";x.fillText(fp(c.p),w-pw+4,y+4);
+}
+function toast(m){const t=$("toast");t.textContent=m;t.style.opacity=1;clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.opacity=0,2800)}
+function trade(){
+ const c=cur(),a=parseFloat($("amt").value);if(!(a>0))return toast("Enter an amount first");
+ if(mode==="buy"){
+  if(a>S.cash+.005)return toast("Not enough cash");
+  const sp=a>=S.cash-.01?S.cash:a;if(sp<.01)return toast("Not enough cash");
+  const fee=sp*FEE,h=S.hold[c.s]||{q:0,cost:0};h.q+=(sp-fee)/c.p;h.cost+=sp-fee;S.hold[c.s]=h;S.cash-=sp;S.fees+=fee;S.tr++;
+  toast("Bought "+fm(sp)+" of "+c.s);
+ }else{
+  const h=S.hold[c.s];if(!h)return toast("You don’t own any "+c.s);
+  const val=h.q*c.p,all=a>=val-.01,su=all?val:a,f=su/val,qs=h.q*f,gross=qs*c.p,fee=gross*FEE,net=gross-fee,basis=h.cost*f,pnl=net-basis;
+  h.q-=qs;h.cost-=basis;if(all)delete S.hold[c.s];
+  S.cash+=net;S.fees+=fee;S.tr++;S.sells++;if(pnl>0)S.wins++;S.best=Math.max(S.best,pnl);S.worst=Math.min(S.worst,pnl);
+  toast("Sold "+c.s+": "+(pnl>=0?"made ":"lost ")+fm(Math.abs(pnl))+" ("+pc(pnl/basis*100)+")");
+ }
+ $("amt").value="";save();render();
+}
+function setMode(m){mode=m;$("tb").className=m==="buy"?"on b":"b";$("ts").className=m==="sell"?"on s":"s";render()}
+$("tb").onclick=()=>setMode("buy");$("ts").onclick=()=>setMode("sell");$("go").onclick=trade;
+document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{const p=+b.dataset.p,h=S.hold[sel],base=mode==="buy"?S.cash:(h?h.q*cur().p:0);$("amt").value=(Math.floor(base*p*100)/100).toFixed(2)});
+document.addEventListener("click",e=>{const t=e.target.closest("[data-s]");if(t){sel=t.dataset.s;render()}});
+$("nm").value=S.name||"";$("nm").oninput=()=>{S.name=$("nm").value;save()};
+let rt;$("rs").onclick=()=>{if($("rs").textContent==="Reset"){$("rs").textContent="Sure?";rt=setTimeout(()=>$("rs").textContent="Reset",3000)}else{clearTimeout(rt);$("rs").textContent="Reset";restart()}};
+function restart(){S=fresh(S.name);$("bust").style.display="none";save();render();toast("Fresh start: $67.00")}
+$("again").onclick=restart;
+function rLB(){
+ const rows=LB.slice().sort((a,b)=>b.best-a.best);
+ $("lbn").textContent=db&&uid?"(global)":"(this device)";
+ $("lb").innerHTML=rows.length?'<table><tr><th>#</th><th>Player</th><th>Best</th><th>Return</th></tr>'+rows.map((r,i)=>{const rt=(r.best/START-1)*100;return'<tr'+(r.id===uid||r.me?' style="font-weight:bold"':"")+"><td>"+(i+1)+"</td><td>"+esc(r.name)+"</td><td>"+fm(r.best)+'</td><td class="'+cl(rt)+'">'+pc(rt)+"</td></tr>"}).join("")+"</table>":'<span class="mut">No scores yet. Be first!</span>';
+}
+async function submit(){
+ const nm=(S.name||"").trim();if(!nm)return toast("Type a name at the top first");
+ const v=nw();
+ if(db&&uid){
+  try{const ref=db.collection("leaderboard").doc(uid),p=await ref.get(),pb=p.exists?(p.data().best||0):0;
+   await ref.set({name:nm,best:Math.max(v,pb),at:Date.now()});
+   toast(v>pb?"Score submitted: "+fm(v):"Your best is still "+fm(pb)+". Beat it to move up.")}catch(e){toast("Couldn’t reach the leaderboard")}
+ }else{
+  let l=[];try{l=JSON.parse(localStorage.getItem("xamalb"))||[]}catch(e){}
+  l.push({name:nm,best:v,me:1});l.sort((a,b)=>b.best-a.best);LB=l.slice(0,10);
+  try{localStorage.setItem("xamalb",JSON.stringify(LB))}catch(e){}
+  rLB();toast("Score saved: "+fm(v))}
+}
+$("sub").onclick=submit;
+try{LB=JSON.parse(localStorage.getItem("xamalb"))||[]}catch(e){}
+rLB();
+(async()=>{try{
+ const c=window.claude;if(!c)return;
+ const u=await c.use("user"),d=await c.use("db");if(!d||!u)return;
+ const id=await u.id();if(!id)return;
+ db=d;uid=id;LB=[];rLB();
+ d.collection("chat").orderBy("at","desc").limit(60).onSnapshot(s=>{CH=s.docs.map(x=>({id:x.id,...x.data()})).reverse();chatOn=true;$("cmode").textContent="(everyone can see this)";rChat();$("msgs").scrollTop=$("msgs").scrollHeight},()=>{chatOn=false});
+ d.collection("leaderboard").orderBy("best","desc").limit(25).onSnapshot(s=>{LB=s.docs.map(x=>({id:x.id,...x.data()}));rLB()},()=>{});
+}catch(e){}})();
+let CH=[],lastSend=0,chatOn=false;
+function rChat(){const b=$("msgs"),near=b.scrollHeight-b.scrollTop-b.clientHeight<40;
+ b.innerHTML=CH.length?CH.map(m=>'<div class="m"><b'+(m.uid&&m.uid===uid?' class="me"':'')+'>'+esc(m.name||"Guest")+'</b> <span class="mut">'+new Date(m.at||Date.now()).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})+'</span><br>'+esc(m.text)+'</div>').join(""):'<span class="mut">No messages yet. Say hi!</span>';
+ if(near)b.scrollTop=b.scrollHeight}
+async function send(){const t=$("cin").value.trim();if(!t)return;
+ if(Date.now()-lastSend<1500)return toast("Slow down a little");
+ const nm=((S.name||"").trim()||"Guest").slice(0,16);lastSend=Date.now();$("cin").value="";
+ if(chatOn){try{await db.collection("chat").add({name:nm,text:t.slice(0,200),at:Date.now(),uid:uid})}catch(e){toast("Couldn’t send. You may need to sign in.")}}
+ else{CH.push({name:nm,text:t.slice(0,200),at:Date.now()});rChat();b=$("msgs");b.scrollTop=b.scrollHeight}}
+$("csend").onclick=send;$("cin").addEventListener("keydown",e=>{if(e.key==="Enter")send()});
+$("cmode").textContent="(only on this device)";rChat();
+addEventListener("resize",draw);
+render();setInterval(tick,1000);
+</script></body></html>
